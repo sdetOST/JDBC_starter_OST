@@ -6,6 +6,9 @@ import io.restassured.response.Response;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static io.restassured.RestAssured.*;
 import static org.junit.Assert.*;
 
@@ -75,6 +78,11 @@ public class T02_SpartanTestWithParameters {
         assertEquals("application/json;charset=UTF-8", response.contentType());
         assertTrue(response.body().asString().contains("Paige"));
 
+        System.out.println("id: " +response.path("id"));             // response.body().path("id")
+        System.out.println("name: " + response.path("name"));        // response.body().path("name")
+        System.out.println("gender: " + response.path("gender"));    // response.body().path("gender")
+        System.out.println("phone: " + response.path("phone"));      // response.body().path("phone")
+
         response.prettyPrint();
 
 //-----------------------------------------------------log().all();
@@ -104,6 +112,11 @@ public class T02_SpartanTestWithParameters {
         assertTrue(response.body().asString().contains("message"));
         assertTrue(response.body().asString().contains("Spartan Not Found"));
 
+        assertEquals((Integer)404, response.path("status"));
+        assertEquals("Not Found", response.path("error"));
+        assertEquals("Spartan Not Found", response.path("message"));
+        assertEquals("/api/spartans/500", response.path("path"));
+
         response.prettyPrint();
 
     }
@@ -116,13 +129,14 @@ public class T02_SpartanTestWithParameters {
 //    Then response status code should be 200
 //    And response content-type: application/json;charset=UTF-8
 //    And "Female" should be in response payload
-//    And "Janetta" should be in response payload
+//    And "Melania" should be in response payload
     @Test
     public void GetSpartanById_Positive_Querey_Param_Test() {
-        Response response = given().accept(ContentType.JSON).
-                            and().queryParam("gender", "Female").
-                            and().queryParam("nameContains", "Me").
-                            when().get("/spartans/search");
+//opt1
+//        Response response = given().accept(ContentType.JSON).
+//                            and().queryParam("gender", "Female").
+//                            and().queryParam("nameContains", "Me").
+//                            when().get("/spartans/search");
 //opt2
 //        Response response = given().accept(ContentType.JSON).
 //                            and().queryParams("gender", "Female",
@@ -132,13 +146,50 @@ public class T02_SpartanTestWithParameters {
 //        Response response = given().accept(ContentType.JSON).
 //                             when().get("/spartans/search?gender=Female&nameContains=Me");
 
+
+        Map<String,Object> paramsMap = new HashMap<>();
+        paramsMap.put("gender", "Female");
+        paramsMap.put("nameContains", "Me");
+
+        Response response = given().accept(ContentType.JSON).
+                and().queryParams(paramsMap).
+                when().get("/spartans/search");
+
+
+
         response.prettyPrint();
 
         assertEquals(200, response.statusCode());
         assertEquals("application/json;charset=UTF-8", response.contentType());
         assertTrue(response.body().asString().contains("Female"));
-        assertTrue(response.body().asString().contains("me"));
+        assertTrue(response.body().asString().contains("Melania"));
 
+
+    }
+
+//    Given accept type is XML
+//    And Query parameters values are:
+//          gender          |   Female
+//          nameContains    |   Me
+//    When user sends GET request to /api/spartans/search?gender=Female
+//    Then response status code should be 406
+//    And "Could not find acceptable representation" should be in response payload
+
+    @Test
+    public void GetSpartanById_Negative_Querey_Param_Test() {
+
+        Map<String,Object> paramsMap = new HashMap<>();
+        paramsMap.put("gender", "Female");
+        paramsMap.put("nameContains", "Me");
+
+        Response response = given().accept(ContentType.XML).
+                            and().queryParams(paramsMap).
+                            when().get("/spartans/search");
+
+        response.prettyPrint();
+
+        assertEquals(406, response.statusCode());
+        assertTrue(response.body().asString().contains("Could not find acceptable representation"));
 
     }
 

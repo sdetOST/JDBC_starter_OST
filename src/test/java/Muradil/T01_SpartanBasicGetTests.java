@@ -77,10 +77,12 @@ public class T01_SpartanBasicGetTests {
     public void ViewAllSpartansTest2() {
         Response response=RestAssured.
                 given().accept(ContentType.JSON).
-                when().get("/spartans/");
+                when().get("/spartans");
         assertEquals(200, response.statusCode());
         assertEquals("application/json;charset=UTF-8", response.contentType());
         assertTrue(response.body().asString().contains("Nels"));
+
+
     }
 
 //    When User send get request to /spartans/3
@@ -104,13 +106,20 @@ public class T01_SpartanBasicGetTests {
     @Test
     public void getASpartanTest2() {
 //  request - query
-        Response response = when().get("/spartans/4");
+        Response response =  given().accept(ContentType.JSON).
+                            when().get("/spartans/4");
 // response - verification
         assertEquals(200, response.statusCode());
         assertEquals("application/json;charset=UTF-8", response.contentType());
-        assertTrue(response.contentType().contains("application/jsonn"));
+        assertTrue(response.contentType().contains("application/json"));
         assertTrue(response.body().asString().contains("Paige"));
 
+        System.out.println("id: " +response.path("id"));             // response.body().path("id")
+        System.out.println("name: " + response.path("name"));        // response.body().path("name")
+        System.out.println("gender: " + response.path("gender"));    // response.body().path("gender")
+        System.out.println("phone: " + response.path("phone"));      // response.body().path("phone")
+
+        response.prettyPrint();
     }
 
 }
